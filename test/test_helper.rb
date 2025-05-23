@@ -1,22 +1,21 @@
-require "bundler/setup"
+# frozen_string_literal: true
 
-require "rails"
-
-require "jbuilder"
-
-require "active_support/core_ext/array/access"
-require "active_support/cache/memory_store"
-require "active_support/json"
-require "active_model"
+require 'bundler/setup'
+require 'rails'
+require 'jbuilder'
+require 'active_support/core_ext/array/access'
+require 'active_support/cache/memory_store'
+require 'active_support/json'
+require 'active_model'
 require 'action_controller/railtie'
 require 'action_view/railtie'
 
-require "active_support/testing/autorun"
-require "mocha/minitest"
+require 'active_support/testing/autorun'
+require 'mocha/minitest'
 
 ActiveSupport.test_order = :random
 
-ENV["RAILS_ENV"] ||= "test"
+ENV['RAILS_ENV'] ||= 'test'
 
 class << Rails
   def cache
