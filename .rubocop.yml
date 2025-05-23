@@ -28,6 +28,9 @@ Metrics/ClassLength:
 Metrics/MethodLength:
   Enabled: false
 
+Minitest/MultipleAssertions:
+  Enabled: false
+
 Rails:
   Enabled: true
 
