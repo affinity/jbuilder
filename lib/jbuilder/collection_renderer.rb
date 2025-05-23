@@ -1,12 +1,9 @@
+# frozen_string_literal: true
+
 require 'delegate'
 require 'active_support/concern'
 require 'action_view'
-
-begin
-  require 'action_view/renderer/collection_renderer'
-rescue LoadError
-  require 'action_view/renderer/partial_renderer'
-end
+require 'action_view/renderer/collection_renderer'
 
 class Jbuilder
   module CollectionRenderable # :nodoc:
@@ -62,48 +59,18 @@ class Jbuilder
     private_constant :ScopedIterator
   end
 
-  if defined?(::ActionView::CollectionRenderer)
-    # Rails 6.1 support:
-    class CollectionRenderer < ::ActionView::CollectionRenderer # :nodoc:
-      include CollectionRenderable
+  class CollectionRenderer < ::ActionView::CollectionRenderer # :nodoc:
+    include CollectionRenderable
 
-      def initialize(lookup_context, options, &scope)
-        super(lookup_context, options)
-        @scope = scope
-      end
-
-      private
-        def collection_with_template(view, template, layout, collection)
-          super(view, template, layout, ScopedIterator.new(collection, @scope))
-        end
+    def initialize(lookup_context, options, &scope)
+      super(lookup_context, options)
+      @scope = scope
     end
-  else
-    # Rails 6.0 support:
-    class CollectionRenderer < ::ActionView::PartialRenderer # :nodoc:
-      include CollectionRenderable
 
-      def initialize(lookup_context, options, &scope)
-        super(lookup_context)
-        @options = options
-        @scope = scope
-      end
+    private
 
-      def render_collection_with_partial(collection, partial, context, block)
-        render(context, @options.merge(collection: collection, partial: partial), block)
-      end
-
-      private
-        def collection_without_template(view)
-          @collection = ScopedIterator.new(@collection, @scope)
-
-          super(view)
-        end
-
-        def collection_with_template(view, template)
-          @collection = ScopedIterator.new(@collection, @scope)
-
-          super(view, template)
-        end
+    def collection_with_template(view, template, layout, collection)
+      super(view, template, layout, ScopedIterator.new(collection, @scope))
     end
   end
 
