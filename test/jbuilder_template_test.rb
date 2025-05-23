@@ -49,10 +49,7 @@ class JbuilderTemplateTest < ActiveSupport::TestCase
     assert_equal "hello", result["content"]
   end
 
-  test "partial by name with hash value omission (punning) as last statement [3.1+]" do
-    major, minor, _ = RUBY_VERSION.split(".").map(&:to_i)
-    return unless (major == 3 && minor >= 1) || major > 3
-
+  test "partial by name with hash value omission (punning) as last statement" do
     result = render(<<-JBUILDER)
       content = "hello"
       json.partial! "partial", content:
