@@ -317,7 +317,7 @@ class Jbuilder
   end
 
   def _key(key)
-    @key_formatter ? @key_formatter.format(key) : key.to_s
+    @key_formatter.nil? ? key.name : @key_formatter.format(key)
   end
 
   def _format_keys(hash_or_array)
