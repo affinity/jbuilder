@@ -182,8 +182,8 @@ class Jbuilder
     @attributes << _scope { yield self }
   end
 
-  # Turns the current element into an array and iterates over the passed collection, adding each iteration as
-  # an element of the resulting array.
+  # Turns the current element into an array and iterates over the passed collection, adding each
+  # iteration as an element of the resulting array.
   #
   # Example:
   #
@@ -198,7 +198,8 @@ class Jbuilder
   #
   #   json.(@people) { |person| ... }
   #
-  # It's generally only needed to use this method for top-level arrays. If you have named arrays, you can do:
+  # It's generally only needed to use this method for top-level arrays. If you have named arrays,
+  # you can do:
   #
   #   json.people(@people) do |person|
   #     json.name person.name
@@ -227,7 +228,8 @@ class Jbuilder
     @attributes = _merge_values(@attributes, array)
   end
 
-  # Extracts the mentioned attributes or hash elements from the passed object and turns them into attributes of the JSON.
+  # Extracts the mentioned attributes or hash elements from the passed object and turns them into
+  # attributes of the JSON.
   #
   # Example:
   #
@@ -333,7 +335,7 @@ class Jbuilder
   def _set_value(key, value)
     ::Kernel.raise NullError.build(key) if @attributes.nil?
     ::Kernel.raise ArrayError.build(key) if ::Array === @attributes
-    return if (@ignore_nil && value.nil?) or _blank?(value)
+    return if (@ignore_nil && value.nil?) || _blank?(value)
 
     @attributes = {} if _blank?
     @attributes[_key(key)] = value
@@ -363,7 +365,7 @@ class Jbuilder
   end
 
   def _blank?(value = @attributes)
-    BLANK == value
+    value == BLANK
   end
 
   def _object_respond_to?(object, *methods)
