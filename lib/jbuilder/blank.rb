@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 class Jbuilder
   class Blank
     def ==(other)
-      super || Blank === other
+      super || other.is_a?(Blank)
     end
 
     def empty?

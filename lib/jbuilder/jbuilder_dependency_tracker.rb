@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Jbuilder::DependencyTracker
   EXPLICIT_DEPENDENCY = /# Template Dependency: (\S+)/
 
@@ -28,7 +30,9 @@ class Jbuilder::DependencyTracker
   end
 
   def initialize(name, template, view_paths = nil)
-    @name, @template, @view_paths = name, template, view_paths
+    @name = name
+    @template = template
+    @view_paths = view_paths
   end
 
   def dependencies
@@ -50,7 +54,7 @@ class Jbuilder::DependencyTracker
   def explicit_dependencies
     dependencies = source.scan(EXPLICIT_DEPENDENCY).flatten.uniq
 
-    wildcards, explicits = dependencies.partition { |dependency| dependency.end_with?("/*") }
+    wildcards, explicits = dependencies.partition { |dependency| dependency.end_with?('/*') }
 
     (explicits + resolve_directories(wildcards)).uniq
   end
@@ -62,9 +66,9 @@ class Jbuilder::DependencyTracker
     # Remove trailing "/*"
     prefixes = wildcard_dependencies.map { |query| query[0..-3] }
 
-    @view_paths.flat_map(&:all_template_paths).uniq.filter_map { |path|
+    @view_paths.flat_map(&:all_template_paths).uniq.filter_map do |path|
       path.to_s if prefixes.include?(path.prefix)
-    }.sort
+    end.sort
   end
 
   def source

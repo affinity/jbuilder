@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support'
 require 'jbuilder/jbuilder'
 require 'jbuilder/blank'
@@ -15,7 +17,7 @@ class Jbuilder
   def initialize(options = {})
     @attributes = {}
 
-    @key_formatter = options.fetch(:key_formatter){ @@key_formatter ? @@key_formatter.clone : nil}
+    @key_formatter = options.fetch(:key_formatter) { @@key_formatter ? @@key_formatter.clone : nil }
     @ignore_nil = options.fetch(:ignore_nil, @@ignore_nil)
     @deep_format_keys = options.fetch(:deep_format_keys, @@deep_format_keys)
 
@@ -23,52 +25,53 @@ class Jbuilder
   end
 
   # Yields a builder and automatically turns the result into a JSON string
-  def self.encode(*args, &block)
-    new(*args, &block).target!
+  def self.encode(*, &)
+    new(*, &).target!
   end
 
   BLANK = Blank.new
 
-  def set!(key, value = BLANK, *args, &block)
-    result = if ::Kernel.block_given?
-      if !_blank?(value)
-        # json.comments @post.comments { |comment| ... }
-        # { "comments": [ { ... }, { ... } ] }
-        _scope{ array! value, &block }
+  def set!(key, value = BLANK, *args, &)
+    result =
+      if ::Kernel.block_given?
+        if _blank?(value)
+          # json.comments { ... }
+          # { "comments": ... }
+          _merge_block(key) { yield self }
+        else
+          # json.comments @post.comments { |comment| ... }
+          # { "comments": [ { ... }, { ... } ] }
+          _scope { array!(value, &) }
+        end
+      elsif args.empty?
+        if ::Jbuilder === value
+          # json.age 32
+          # json.person another_jbuilder
+          # { "age": 32, "person": { ...  }
+          _format_keys(value.attributes!)
+        else
+          # json.age 32
+          # { "age": 32 }
+          _format_keys(value)
+        end
+      elsif _is_collection?(value)
+        # json.comments @post.comments, :content, :created_at
+        # { "comments": [ { "content": "hello", "created_at": "..." }, { "content": "world", "created_at": "..." } ] }
+        _scope { array! value, *args }
       else
-        # json.comments { ... }
-        # { "comments": ... }
-        _merge_block(key){ yield self }
+        # json.author @post.creator, :name, :email_address
+        # { "author": { "name": "David", "email_address": "david@loudthinking.com" } }
+        _merge_block(key) { extract! value, *args }
       end
-    elsif args.empty?
-      if ::Jbuilder === value
-        # json.age 32
-        # json.person another_jbuilder
-        # { "age": 32, "person": { ...  }
-        _format_keys(value.attributes!)
-      else
-        # json.age 32
-        # { "age": 32 }
-        _format_keys(value)
-      end
-    elsif _is_collection?(value)
-      # json.comments @post.comments, :content, :created_at
-      # { "comments": [ { "content": "hello", "created_at": "..." }, { "content": "world", "created_at": "..." } ] }
-      _scope{ array! value, *args }
-    else
-      # json.author @post.creator, :name, :email_address
-      # { "author": { "name": "David", "email_address": "david@loudthinking.com" } }
-      _merge_block(key){ extract! value, *args }
-    end
 
     _set_value key, result
   end
 
-  def method_missing(*args, &block)
+  def method_missing(*, &)
     if ::Kernel.block_given?
-      set!(*args, &block)
+      set!(*, &)
     else
-      set!(*args)
+      set!(*)
     end
   end
 
@@ -100,13 +103,13 @@ class Jbuilder
   #
   #   { "_first_name": "David" }
   #
-  def key_format!(*args)
-    @key_formatter = KeyFormatter.new(*args)
+  def key_format!(*)
+    @key_formatter = KeyFormatter.new(*)
   end
 
   # Same as the instance method key_format! except sets the default.
-  def self.key_format(*args)
-    @@key_formatter = KeyFormatter.new(*args)
+  def self.key_format(*)
+    @@key_formatter = KeyFormatter.new(*)
   end
 
   # If you want to skip adding nil values to your JSON hash. This is useful
@@ -176,7 +179,7 @@ class Jbuilder
   #   end
   def child!
     @attributes = [] unless ::Array === @attributes
-    @attributes << _scope{ yield self }
+    @attributes << _scope { yield self }
   end
 
   # Turns the current element into an array and iterates over the passed collection, adding each iteration as
@@ -209,16 +212,17 @@ class Jbuilder
   #   json.array! [1, 2, 3]
   #
   #   [1,2,3]
-  def array!(collection = [], *attributes, &block)
-    array = if collection.nil?
-      []
-    elsif ::Kernel.block_given?
-      _map_collection(collection, &block)
-    elsif attributes.any?
-      _map_collection(collection) { |element| extract! element, *attributes }
-    else
-      _format_keys(collection.to_a)
-    end
+  def array!(collection = [], *attributes, &)
+    array =
+      if collection.nil?
+        []
+      elsif ::Kernel.block_given?
+        _map_collection(collection, &)
+      elsif attributes.any?
+        _map_collection(collection) { |element| extract! element, *attributes }
+      else
+        _format_keys(collection.to_a)
+      end
 
     @attributes = _merge_values(@attributes, array)
   end
@@ -248,9 +252,9 @@ class Jbuilder
     end
   end
 
-  def call(object, *attributes, &block)
+  def call(object, *attributes, &)
     if ::Kernel.block_given?
-      array! object, &block
+      array!(object, &)
     else
       extract! object, *attributes
     end
@@ -261,7 +265,7 @@ class Jbuilder
     @attributes = nil
   end
 
-  alias_method :null!, :nil!
+  alias null! nil!
 
   # Returns the attributes of the current builder.
   def attributes!
@@ -282,24 +286,24 @@ class Jbuilder
   private
 
   def _extract_hash_values(object, attributes)
-    attributes.each{ |key| _set_value key, _format_keys(object.fetch(key)) }
+    attributes.each { |key| _set_value key, _format_keys(object.fetch(key)) }
   end
 
   def _extract_method_values(object, attributes)
-    attributes.each{ |key| _set_value key, _format_keys(object.public_send(key)) }
+    attributes.each { |key| _set_value key, _format_keys(object.public_send(key)) }
   end
 
   def _merge_block(key)
     current_value = _blank? ? BLANK : @attributes.fetch(_key(key), BLANK)
     ::Kernel.raise NullError.build(key) if current_value.nil?
-    new_value = _scope{ yield self }
+    new_value = _scope { yield self }
     _merge_values(current_value, new_value)
   end
 
   def _merge_values(current_value, updates)
     if _blank?(updates)
       current_value
-    elsif _blank?(current_value) || updates.nil? || current_value.empty? && ::Array === updates
+    elsif _blank?(current_value) || updates.nil? || (current_value.empty? && ::Array === updates)
       updates
     elsif ::Array === current_value && ::Array === updates
       current_value + updates
@@ -329,36 +333,41 @@ class Jbuilder
   def _set_value(key, value)
     ::Kernel.raise NullError.build(key) if @attributes.nil?
     ::Kernel.raise ArrayError.build(key) if ::Array === @attributes
-    return if @ignore_nil && value.nil? or _blank?(value)
+    return if (@ignore_nil && value.nil?) or _blank?(value)
+
     @attributes = {} if _blank?
     @attributes[_key(key)] = value
   end
 
   def _map_collection(collection)
     collection.map do |element|
-      _scope{ yield element }
+      _scope { yield element }
     end - [BLANK]
   end
 
   def _scope
-    parent_attributes, parent_formatter, parent_deep_format_keys = @attributes, @key_formatter, @deep_format_keys
+    parent_attributes = @attributes
+    parent_formatter = @key_formatter
+    parent_deep_format_keys = @deep_format_keys
     @attributes = BLANK
     yield
     @attributes
   ensure
-    @attributes, @key_formatter, @deep_format_keys = parent_attributes, parent_formatter, parent_deep_format_keys
+    @attributes = parent_attributes
+    @key_formatter = parent_formatter
+    @deep_format_keys = parent_deep_format_keys
   end
 
   def _is_collection?(object)
     _object_respond_to?(object, :map, :count) && !(::Struct === object)
   end
 
-  def _blank?(value=@attributes)
+  def _blank?(value = @attributes)
     BLANK == value
   end
 
   def _object_respond_to?(object, *methods)
-    methods.all?{ |m| object.respond_to?(m) }
+    methods.all? { |m| object.respond_to?(m) }
   end
 end
 

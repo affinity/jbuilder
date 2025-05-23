@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'jbuilder/jbuilder'
 require 'active_support/core_ext/array'
 
@@ -16,7 +18,7 @@ class Jbuilder
       end
     end
 
-    def initialize_copy(original)
+    def initialize_copy(_original)
       @cache = {}
     end
 

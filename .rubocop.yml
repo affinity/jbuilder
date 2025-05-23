@@ -1,0 +1,41 @@
+plugins:
+  - rubocop-minitest
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rake
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.4
+  Exclude:
+    - '.git/**/*'
+    - 'bin/**/*'
+    - 'tmp/**/*'
+    - 'vendor/**/*'
+    - 'gemfiles/**/*'
+
+Layout/LineLength:
+  Max: 100
+
+Metrics/BlockLength:
+  Exclude:
+    - 'test/**/*'
+    - '*.gemspec'
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Minitest/MultipleAssertions:
+  Enabled: false
+
+Rails:
+  Enabled: true
+
+Style/CaseEquality:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
