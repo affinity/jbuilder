@@ -11,13 +11,14 @@ class Jbuilder
 
     class_methods do
       def supported?
-        superclass.private_method_defined?(:build_rendered_template) && self.superclass.private_method_defined?(:build_rendered_collection)
+        superclass.private_method_defined?(:build_rendered_template) &&
+          superclass.private_method_defined?(:build_rendered_collection)
       end
     end
 
     private
 
-    def build_rendered_template(content, template, layout = nil)
+    def build_rendered_template(content, template, _layout = nil)
       super(content || json.attributes!, template)
     end
 

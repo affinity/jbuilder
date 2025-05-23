@@ -25,6 +25,9 @@ Metrics/BlockLength:
 Metrics/ClassLength:
   Enabled: false
 
+Metrics/MethodLength:
+  Enabled: false
+
 Rails:
   Enabled: true
 
