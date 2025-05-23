@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'jbuilder/jbuilder'
 require 'jbuilder/collection_renderer'
 require 'action_dispatch/http/mime_type'
@@ -10,21 +12,21 @@ class JbuilderTemplate < Jbuilder
 
   self.template_lookup_options = { handlers: [:jbuilder] }
 
-  def initialize(context, *args)
+  def initialize(context, *)
     @context = context
     @cached_root = nil
-    super(*args)
+    super(*)
   end
 
-  # Generates JSON using the template specified with the `:partial` option. For example, the code below will render
-  # the file `views/comments/_comments.json.jbuilder`, and set a local variable comments with all this message's
-  # comments, which can be used inside the partial.
+  # Generates JSON using the template specified with the `:partial` option. For example, the code
+  # below will render the file `views/comments/_comments.json.jbuilder`, and set a local variable
+  # comments with all this message's comments, which can be used inside the partial.
   #
   # Example:
   #
   #   json.partial! 'comments/comments', comments: @message.comments
   #
-  # There are multiple ways to generate a collection of elements as JSON, as ilustrated below:
+  # There are multiple ways to generate a collection of elements as JSON, as illustrated below:
   #
   # Example:
   #
@@ -39,8 +41,8 @@ class JbuilderTemplate < Jbuilder
   #   # or:
   #   json.comments @post.comments, partial: 'comments/comment', as: :comment
   #
-  # Aside from that, the `:cached` options is available on Rails >= 6.0. This will cache the rendered results
-  # effectively using the multi fetch feature.
+  # Aside from that, the `:cached` options is available on Rails >= 6.0. This will cache the
+  # rendered results effectively using the multi fetch feature.
   #
   # Example:
   #
@@ -56,15 +58,15 @@ class JbuilderTemplate < Jbuilder
     end
   end
 
-  # Caches the json constructed within the block passed. Has the same signature as the `cache` helper
-  # method in `ActionView::Helpers::CacheHelper` and so can be used in the same way.
+  # Caches the json constructed within the block passed. Has the same signature as the `cache`
+  # helper method in `ActionView::Helpers::CacheHelper` and so can be used in the same way.
   #
   # Example:
   #
   #   json.cache! ['v1', @person], expires_in: 10.minutes do
   #     json.extract! @person, :name, :age
   #   end
-  def cache!(key=nil, options={})
+  def cache!(key = nil, options = {})
     if @context.controller.perform_caching
       value = _cache_fragment_for(key, options) do
         _scope { yield self }
@@ -76,9 +78,10 @@ class JbuilderTemplate < Jbuilder
     end
   end
 
-  # Caches the json structure at the root using a string rather than the hash structure. This is considerably
-  # faster, but the drawback is that it only works, as the name hints, at the root. So you cannot
-  # use this approach to cache deeper inside the hierarchy, like in partials or such. Continue to use #cache! there.
+  # Caches the json structure at the root using a string rather than the hash structure. This is
+  # considerably faster, but the drawback is that it only works, as the name hints, at the root. So
+  # you cannot use this approach to cache deeper inside the hierarchy, like in partials or such.
+  # Continue to use #cache! there.
   #
   # Example:
   #
@@ -87,27 +90,32 @@ class JbuilderTemplate < Jbuilder
   #   end
   #
   #   # json.extra 'This will not work either, the root must be exclusive'
-  def cache_root!(key=nil, options={})
+  def cache_root!(key = nil, options = {})
     if @context.controller.perform_caching
-      ::Kernel.raise "cache_root! can't be used after JSON structures have been defined" if @attributes.present?
+      if @attributes.present?
+        ::Kernel.raise "cache_root! can't be used after JSON structures have been defined"
+      end
 
-      @cached_root = _cache_fragment_for([ :root, key ], options) { yield; target! }
+      @cached_root = _cache_fragment_for([:root, key], options) do
+        yield
+        target!
+      end
     else
       yield
     end
   end
 
   # Conditionally caches the json depending in the condition given as first parameter. Has the same
-  # signature as the `cache` helper method in `ActionView::Helpers::CacheHelper` and so can be used in
-  # the same way.
+  # signature as the `cache` helper method in `ActionView::Helpers::CacheHelper` and so can be used
+  # in the same way.
   #
   # Example:
   #
   #   json.cache_if! !admin?, @person, expires_in: 10.minutes do
   #     json.extract! @person, :name, :age
   #   end
-  def cache_if!(condition, *args, &block)
-    condition ? cache!(*args, &block) : yield
+  def cache_if!(condition, *, &)
+    condition ? cache!(*, &) : yield
   end
 
   def target!
@@ -145,20 +153,24 @@ class JbuilderTemplate < Jbuilder
       collection = options.delete(:collection) || []
       partial = options.delete(:partial)
       options[:locals].merge!(json: self)
-      collection = EnumerableCompat.new(collection) if collection.respond_to?(:count) && !collection.respond_to?(:size)
+      if collection.respond_to?(:count) && !collection.respond_to?(:size)
+        collection = EnumerableCompat.new(collection)
+      end
 
       if options.has_key?(:layout)
-        ::Kernel.raise ::NotImplementedError, "The `:layout' option is not supported in collection rendering."
+        ::Kernel.raise ::NotImplementedError,
+                       "The `:layout' option is not supported in collection rendering."
       end
 
       if options.has_key?(:spacer_template)
-        ::Kernel.raise ::NotImplementedError, "The `:spacer_template' option is not supported in collection rendering."
+        ::Kernel.raise ::NotImplementedError,
+                       "The `:spacer_template' option is not supported in collection rendering."
       end
 
       if collection.present?
         results = CollectionRenderer
-          .new(@context.lookup_context, options) { |&block| _scope(&block) }
-          .render_collection_with_partial(collection, partial, @context, nil)
+                  .new(@context.lookup_context, options) { |&block| _scope(&block) }
+                  .render_collection_with_partial(collection, partial, @context, nil)
 
         array! if results.respond_to?(:body) && results.body.nil?
       else
@@ -190,9 +202,9 @@ class JbuilderTemplate < Jbuilder
     @context.render options
   end
 
-  def _cache_fragment_for(key, options, &block)
+  def _cache_fragment_for(key, options, &)
     key = _cache_key(key, options)
-    _read_fragment_cache(key, options) || _write_fragment_cache(key, options, &block)
+    _read_fragment_cache(key, options) || _write_fragment_cache(key, options, &)
   end
 
   def _read_fragment_cache(key, options = nil)
@@ -215,8 +227,8 @@ class JbuilderTemplate < Jbuilder
 
     if @context.respond_to?(:combined_fragment_cache_key)
       key = @context.combined_fragment_cache_key(key)
-    else
-      key = url_for(key).split('://', 2).last if ::Hash === key
+    elsif ::Hash === key
+      key = url_for(key).split('://', 2).last
     end
 
     ::ActiveSupport::Cache.expand_cache_key(key, :jbuilder)
@@ -239,14 +251,15 @@ class JbuilderTemplate < Jbuilder
   end
 
   def _set_inline_partial(name, object, options)
-    value = if object.nil?
-      []
-    elsif _is_collection?(object)
-      _scope{ _render_partial_with_options options.merge(collection: object) }
-    else
-      locals = ::Hash[options[:as], object]
-      _scope{ _render_partial_with_options options.merge(locals: locals) }
-    end
+    value =
+      if object.nil?
+        []
+      elsif _is_collection?(object)
+        _scope { _render_partial_with_options options.merge(collection: object) }
+      else
+        locals = ::Hash[options[:as], object]
+        _scope { _render_partial_with_options options.merge(locals: locals) }
+      end
 
     set! name, value
   end
@@ -258,11 +271,12 @@ class JbuilderTemplate < Jbuilder
       options = name_or_options
     else
       # partial! 'name', locals: {foo: 'bar'}
-      if locals.one? && (locals.keys.first == :locals)
-        options = locals.merge(partial: name_or_options)
-      else
-        options = { partial: name_or_options, locals: locals }
-      end
+      options =
+        if locals.one? && (locals.keys.first == :locals)
+          locals.merge(partial: name_or_options)
+        else
+          { partial: name_or_options, locals: locals }
+        end
       # partial! 'name', foo: 'bar'
       as = locals.delete(:as)
       options[:as] = as if as.present?
