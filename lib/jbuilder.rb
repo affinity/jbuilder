@@ -64,14 +64,6 @@ class Jbuilder
     _set_value key, result
   end
 
-  def method_missing(*args, &block)
-    if ::Kernel.block_given?
-      set!(*args, &block)
-    else
-      set!(*args)
-    end
-  end
-
   # Specifies formatting to be applied to the key. Passing in a name of a function
   # will cause that function to be called on the key.  So :upcase will upper case
   # the key.  You can also pass in lambdas for more complex transformations.
@@ -280,6 +272,16 @@ class Jbuilder
   end
 
   private
+
+  def method_missing(key, *args, &block)
+    ::Jbuilder.class_eval <<-RUBY, __FILE__, __LINE__ + 1
+      def #{key.name}(...)
+        set!(:#{key.name}, ...)
+      end
+    RUBY
+
+    set!(key, *args, &block)
+  end
 
   def _extract_hash_values(object, attributes)
     attributes.each{ |key| _set_value key, _format_keys(object.fetch(key)) }
