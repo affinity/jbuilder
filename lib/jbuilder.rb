@@ -12,14 +12,14 @@ class Jbuilder
   @@ignore_nil    = false
   @@deep_format_keys = false
 
-  def initialize(options = {})
+  def initialize(options = {}, &block)
     @attributes = {}
 
     @key_formatter = options.fetch(:key_formatter){ @@key_formatter ? @@key_formatter.clone : nil}
     @ignore_nil = options.fetch(:ignore_nil, @@ignore_nil)
     @deep_format_keys = options.fetch(:deep_format_keys, @@deep_format_keys)
 
-    yield self if ::Kernel.block_given?
+    yield self if block
   end
 
   # Yields a builder and automatically turns the result into a JSON string
@@ -30,7 +30,7 @@ class Jbuilder
   BLANK = Blank.new
 
   def set!(key, value = BLANK, *args, &block)
-    result = if ::Kernel.block_given?
+    result = if block
       if !_blank?(value)
         # json.comments @post.comments { |comment| ... }
         # { "comments": [ { ... }, { ... } ] }
@@ -65,7 +65,7 @@ class Jbuilder
   end
 
   def method_missing(*args, &block)
-    if ::Kernel.block_given?
+    if block
       set!(*args, &block)
     else
       set!(*args)
@@ -212,7 +212,7 @@ class Jbuilder
   def array!(collection = [], *attributes, &block)
     array = if collection.nil?
       []
-    elsif ::Kernel.block_given?
+    elsif block
       _map_collection(collection, &block)
     elsif attributes.any?
       _map_collection(collection) { |element| extract! element, *attributes }
@@ -249,7 +249,7 @@ class Jbuilder
   end
 
   def call(object, *attributes, &block)
-    if ::Kernel.block_given?
+    if block
       array! object, &block
     else
       extract! object, *attributes
