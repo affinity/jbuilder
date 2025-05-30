@@ -118,7 +118,8 @@ class JbuilderTemplate < Jbuilder
     options = args.first
 
     if args.one? && _partial_options?(options)
-      partial! options.merge(collection: collection)
+      options[:collection] = collection
+      partial! options
     else
       super
     end
@@ -137,14 +138,14 @@ class JbuilderTemplate < Jbuilder
   private
 
   def _render_partial_with_options(options)
-    options.reverse_merge! locals: options.except(:partial, :as, :collection, :cached)
-    options.reverse_merge! ::JbuilderTemplate.template_lookup_options
+    options[:locals] ||= options.except(:partial, :as, :collection, :cached)
+    options[:handlers] ||= ::JbuilderTemplate.template_lookup_options[:handlers]
     as = options[:as]
 
     if as && options.key?(:collection)
       collection = options.delete(:collection) || []
       partial = options.delete(:partial)
-      options[:locals].merge!(json: self)
+      options[:locals][:json] = self
       collection = EnumerableCompat.new(collection) if collection.respond_to?(:count) && !collection.respond_to?(:size)
 
       if options.has_key?(:layout)
@@ -170,7 +171,7 @@ class JbuilderTemplate < Jbuilder
   end
 
   def _render_partial(options)
-    options[:locals].merge! json: self
+    options[:locals][:json] = self
     @context.render options
   end
 
@@ -226,10 +227,16 @@ class JbuilderTemplate < Jbuilder
     value = if object.nil?
       []
     elsif _is_collection?(object)
-      _scope{ _render_partial_with_options options.merge(collection: object) }
+      _scope do
+        options[:collection] = object
+        _render_partial_with_options options
+      end
     else
       locals = ::Hash[options[:as], object]
-      _scope{ _render_partial_with_options options.merge(locals: locals) }
+      _scope do
+        options[:locals] = locals
+        _render_partial_with_options options
+      end
     end
 
     set! name, value
@@ -243,7 +250,8 @@ class JbuilderTemplate < Jbuilder
     else
       # partial! 'name', locals: {foo: 'bar'}
       if locals.one? && (locals.keys.first == :locals)
-        options = locals.merge(partial: name_or_options)
+        locals[:partial] = name_or_options
+        options = locals
       else
         options = { partial: name_or_options, locals: locals }
       end
