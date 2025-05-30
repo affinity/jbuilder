@@ -239,7 +239,7 @@ class JbuilderTemplate < Jbuilder
       end
     end
 
-    set! name, value
+    _set_value name, value
   end
 
   def _render_explicit_partial(name_or_options, locals = {})
