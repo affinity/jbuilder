@@ -208,17 +208,7 @@ class Jbuilder
   #
   #   [1,2,3]
   def array!(collection = [], *attributes, &block)
-    array = if collection.nil?
-      []
-    elsif ::Kernel.block_given?
-      _map_collection(collection, &block)
-    elsif attributes.any?
-      _map_collection(collection) { |element| _extract element, attributes }
-    else
-      _format_keys(collection.to_a)
-    end
-
-    @attributes = _merge_values(@attributes, array)
+    _array(collection, attributes, &block)
   end
 
   # Extracts the mentioned attributes or hash elements from the passed object and turns them into attributes of the JSON.
@@ -276,6 +266,20 @@ class Jbuilder
   private
 
   alias_method :method_missing, :set!
+
+  def _array(collection, attributes, &block)
+    array = if collection.nil?
+      []
+    elsif block
+      _map_collection(collection, &block)
+    elsif !attributes.empty?
+      _map_collection(collection) { |element| _extract element, attributes }
+    else
+      _format_keys(collection.to_a)
+    end
+
+    @attributes = _merge_values(@attributes, array)
+  end
 
   def _extract(object, attributes)
     if ::Hash === object
