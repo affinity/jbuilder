@@ -48,11 +48,12 @@ class JbuilderTemplate < Jbuilder
   #
   #   json.comments @post.comments, partial: "comments/comment", as: :comment, cached: true
   #
-  def partial!(*args)
-    if args.one? && _is_active_model?(args.first)
-      _render_active_model_partial args.first
+  def partial!(partial_or_model = nil, partial: nil, **options)
+    if _is_active_model?(partial_or_model)
+      _render_active_model_partial partial_or_model
     else
-      _render_explicit_partial(*args)
+      options[:partial] = partial_or_model.presence || partial
+      _render_partial_with_options options
     end
   end
 
@@ -118,7 +119,7 @@ class JbuilderTemplate < Jbuilder
     options = args.first
 
     if args.one? && _partial_options?(options)
-      partial! options.merge(collection: collection)
+      _render_partial_with_options collection: collection, **options
     else
       super
     end
@@ -235,7 +236,7 @@ class JbuilderTemplate < Jbuilder
   end
 
   def _is_active_model?(object)
-    object.class.respond_to?(:model_name) && object.respond_to?(:to_partial_path)
+    object && object.class.respond_to?(:model_name) && object.respond_to?(:to_partial_path)
   end
 
   def _set_inline_partial(name, object, options)
@@ -249,27 +250,6 @@ class JbuilderTemplate < Jbuilder
     end
 
     set! name, value
-  end
-
-  def _render_explicit_partial(name_or_options, locals = {})
-    case name_or_options
-    when ::Hash
-      # partial! partial: 'name', foo: 'bar'
-      options = name_or_options
-    else
-      # partial! 'name', locals: {foo: 'bar'}
-      if locals.one? && (locals.keys.first == :locals)
-        options = locals.merge(partial: name_or_options)
-      else
-        options = { partial: name_or_options, locals: locals }
-      end
-      # partial! 'name', foo: 'bar'
-      as = locals.delete(:as)
-      options[:as] = as if as.present?
-      options[:collection] = locals[:collection] if locals.key?(:collection)
-    end
-
-    _render_partial_with_options options
   end
 
   def _render_active_model_partial(object)
