@@ -50,7 +50,7 @@ class JbuilderTemplate < Jbuilder
   #   json.comments @post.comments, partial: "comments/comment", as: :comment, cached: true
   #
   def partial!(partial_or_model = nil, **options)
-    if partial_or_model && _is_active_model?(partial_or_model)
+    if partial_or_model.class.respond_to?(:model_name) && partial_or_model.respond_to?(:to_partial_path)
       _render_active_model_partial partial_or_model
     else
       options[:partial] = partial_or_model if partial_or_model
@@ -221,10 +221,6 @@ class JbuilderTemplate < Jbuilder
 
   def _partial_options?(options)
     ::Hash === options && options.key?(:as) && options.key?(:partial)
-  end
-
-  def _is_active_model?(object)
-    object.class.respond_to?(:model_name) && object.respond_to?(:to_partial_path)
   end
 
   def _set_inline_partial(name, object, options)
