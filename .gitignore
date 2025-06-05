@@ -1,5 +1,5 @@
 tmp
-/log
+**/log
 gemfiles/.bundle
 gemfiles/*.lock
 Gemfile.lock
