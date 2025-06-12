@@ -33,7 +33,8 @@ class Jbuilder
     new(*args, &block).target!
   end
 
-  BLANK = Blank.new
+  BLANK = Blank.new.freeze
+  EMPTY_ARRAY = [].freeze
 
   def set!(key, value = BLANK, *args, &block)
     result = if ::Kernel.block_given?
@@ -207,7 +208,7 @@ class Jbuilder
   #   json.array! [1, 2, 3]
   #
   #   [1,2,3]
-  def array!(collection = nil, *attributes, &block)
+  def array!(collection = EMPTY_ARRAY, *attributes, &block)
     _array(collection, attributes, &block)
   end
 
@@ -267,12 +268,12 @@ class Jbuilder
 
   alias_method :method_missing, :set!
 
-  def _array(collection, attributes, &block)
+  def _array(collection = EMPTY_ARRAY, attributes = nil, &block)
     array = if collection.nil?
-      []
+      EMPTY_ARRAY
     elsif block
       _map_collection(collection, &block)
-    elsif !attributes.empty?
+    elsif attributes.present?
       _map_collection(collection) { |element| _extract element, attributes }
     else
       _format_keys(collection.to_a)

@@ -118,7 +118,7 @@ class JbuilderTemplate < Jbuilder
     @cached_root || super
   end
 
-  def array!(collection = nil, *args, &block)
+  def array!(collection = EMPTY_ARRAY, *args, &block)
     options = args.first
 
     if _partial_options?(options)
@@ -167,9 +167,9 @@ class JbuilderTemplate < Jbuilder
           .new(@context.lookup_context, options) { |&block| _scope(&block) }
           .render_collection_with_partial(collection, partial, @context, nil)
 
-        array! if results.respond_to?(:body) && results.body.nil?
+        _array if results.respond_to?(:body) && results.body.nil?
       else
-        array!
+        _array
       end
     else
       _render_partial options
