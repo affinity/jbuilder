@@ -207,7 +207,7 @@ class Jbuilder
   #   json.array! [1, 2, 3]
   #
   #   [1,2,3]
-  def array!(collection = [], *attributes, &block)
+  def array!(collection = nil, *attributes, &block)
     _array(collection, attributes, &block)
   end
 

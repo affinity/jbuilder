@@ -118,7 +118,7 @@ class JbuilderTemplate < Jbuilder
     @cached_root || super
   end
 
-  def array!(collection = [], *args, &block)
+  def array!(collection = nil, *args, &block)
     options = args.first
 
     if _partial_options?(options)
