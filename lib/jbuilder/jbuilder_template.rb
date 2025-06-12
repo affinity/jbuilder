@@ -118,14 +118,14 @@ class JbuilderTemplate < Jbuilder
     @cached_root || super
   end
 
-  def array!(collection = [], *attributes, partial: nil, as: nil, **options)
-    if as && partial
+  def array!(collection = [], *args, &block)
+    options = args.first
+
+    if _partial_options?(options)
       options[:collection] = collection
-      options[:partial] = partial
-      options[:as] = as
       _render_partial_with_options options
     else
-      _array collection, attributes
+      _array collection, args, &block
     end
   end
 
