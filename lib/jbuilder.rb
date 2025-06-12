@@ -35,6 +35,7 @@ class Jbuilder
 
   BLANK = Blank.new.freeze
   EMPTY_ARRAY = [].freeze
+  private_constant :BLANK, :EMPTY_ARRAY
 
   def set!(key, value = BLANK, *args, &block)
     result = if ::Kernel.block_given?
