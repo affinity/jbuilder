@@ -41,7 +41,7 @@ class Jbuilder
       if !_blank?(value)
         # json.comments @post.comments { |comment| ... }
         # { "comments": [ { ... }, { ... } ] }
-        _scope{ array! value, &block }
+        _scope{ _array value, &block }
       else
         # json.comments { ... }
         # { "comments": ... }
@@ -61,7 +61,7 @@ class Jbuilder
     elsif _is_collection?(value)
       # json.comments @post.comments, :content, :created_at
       # { "comments": [ { "content": "hello", "created_at": "..." }, { "content": "world", "created_at": "..." } ] }
-      _scope{ array! value, *args }
+      _scope{ _array value, args }
     else
       # json.author @post.creator, :name, :email_address
       # { "author": { "name": "David", "email_address": "david@loudthinking.com" } }
@@ -235,7 +235,7 @@ class Jbuilder
 
   def call(object, *attributes, &block)
     if ::Kernel.block_given?
-      array! object, &block
+      _array object, &block
     else
       _extract object, attributes
     end
