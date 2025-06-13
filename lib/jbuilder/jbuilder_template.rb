@@ -144,12 +144,12 @@ class JbuilderTemplate < Jbuilder
   def _render_partial_with_options(options)
     options[:locals] ||= options.except(:partial, :as, :collection, :cached)
     options[:handlers] ||= ::JbuilderTemplate.template_lookup_options[:handlers]
-    options[:locals][:json] = self
     as = options[:as]
 
     if as && options.key?(:collection)
       collection = options.delete(:collection) || []
       partial = options.delete(:partial)
+      options[:locals][:json] = self
       collection = EnumerableCompat.new(collection) if collection.respond_to?(:count) && !collection.respond_to?(:size)
 
       if options.has_key?(:layout)
@@ -170,9 +170,14 @@ class JbuilderTemplate < Jbuilder
         array!
       end
     else
-      # Prevents memory allocation for an empty Hash by providing nil as the second argument.
-      @context.render options, nil
+      _render_partial options
     end
+  end
+
+  def _render_partial(options)
+    options[:locals][:json] = self
+    # Prevents memory allocation for an empty Hash by providing nil as the second argument.
+    @context.render options, nil
   end
 
   def _cache_fragment_for(key, options, &block)
