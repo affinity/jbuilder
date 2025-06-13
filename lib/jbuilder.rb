@@ -8,6 +8,7 @@ require 'jbuilder/errors'
 require 'jbuilder/version'
 require 'json'
 require 'active_support/core_ext/hash/deep_merge'
+require 'active_support/core_ext/object/blank'
 
 class Jbuilder
   @@key_formatter = nil
