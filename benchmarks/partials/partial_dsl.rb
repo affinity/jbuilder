@@ -29,13 +29,15 @@ Benchmark.ips do |x|
   x.compare!
 end
 
+json = JbuilderTemplate.new view
+
 Benchmark.memory do |x|
   x.report('before') do
-    100.times { json.partial! "post", post: post }
+    json.partial! "post", post: post
   end
 
   x.report('after') do
-    100.times { json.partial! "post", post: post }
+    json.partial! "post", post: post
   end
 
   x.hold! 'temp_partial_results_memory'
