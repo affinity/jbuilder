@@ -220,7 +220,7 @@ class JbuilderTemplate < Jbuilder
   end
 
   def _is_active_model?(object)
-    object.class.respond_to?(:model_name) && object.respond_to?(:to_partial_path)
+    object.respond_to?(:to_partial_path) && object.class.respond_to?(:model_name)
   end
 
   def _set_inline_partial(name, object, options)
