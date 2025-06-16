@@ -39,7 +39,7 @@ class Jbuilder
   private_constant :BLANK, :EMPTY_ARRAY
 
   def set!(key, value = BLANK, *args, &block)
-    _set(key, value, args, &block)
+    _set(key, value, args, block)
   end
 
   # Specifies formatting to be applied to the key. Passing in a name of a function
@@ -239,7 +239,7 @@ class Jbuilder
 
   alias_method :method_missing, :set!
 
-  def _set(key, value = BLANK, attributes, &block)
+  def _set(key, value = BLANK, attributes = nil, block = nil)
     result = if block
       if !_blank?(value)
         # json.comments @post.comments { |comment| ... }
@@ -248,7 +248,7 @@ class Jbuilder
       else
         # json.comments { ... }
         # { "comments": ... }
-        _merge_block(key){ yield self }
+        _merge_block key, &block
       end
     elsif attributes.empty?
       if ::Jbuilder === value

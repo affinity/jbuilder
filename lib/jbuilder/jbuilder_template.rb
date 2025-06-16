@@ -135,7 +135,7 @@ class JbuilderTemplate < Jbuilder
     if _partial_options?(options)
       _set_inline_partial name, object, options
     else
-      _set name, object, args, &block
+      _set name, object, args, block
     end
   end
 
