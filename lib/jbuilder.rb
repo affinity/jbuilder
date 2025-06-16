@@ -250,7 +250,7 @@ class Jbuilder
         # { "comments": ... }
         _merge_block key, &block
       end
-    elsif attributes.empty?
+    elsif attributes.blank?
       if ::Jbuilder === value
         # json.age 32
         # json.person another_jbuilder
