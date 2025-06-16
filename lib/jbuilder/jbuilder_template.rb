@@ -149,7 +149,7 @@ class JbuilderTemplate < Jbuilder
     as = options[:as]
 
     if as && options.key?(:collection)
-      collection = options.delete(:collection) || []
+      collection = options.delete(:collection) || EMPTY_ARRAY
       partial = options.delete(:partial)
       options[:locals][:json] = self
       collection = EnumerableCompat.new(collection) if collection.respond_to?(:count) && !collection.respond_to?(:size)
@@ -232,7 +232,7 @@ class JbuilderTemplate < Jbuilder
 
   def _set_inline_partial(name, object, options)
     value = if object.nil?
-      []
+      EMPTY_ARRAY
     elsif _is_collection?(object)
       _scope do
         options[:collection] = object
