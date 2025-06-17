@@ -132,10 +132,12 @@ class JbuilderTemplate < Jbuilder
   def set!(name, object = BLANK, *args)
     options = args.first
 
-    if args.one? && _partial_options?(options)
+    if _partial_options?(options)
       _set_inline_partial name, object, options
+    elsif ::Kernel.block_given?
+      _set(name, object, args) { |x| yield x }
     else
-      super
+      _set(name, object, args)
     end
   end
 
@@ -239,9 +241,8 @@ class JbuilderTemplate < Jbuilder
         _render_partial_with_options options
       end
     else
-      locals = ::Hash[options[:as], object]
       _scope do
-        options[:locals] = locals
+        options[:locals] = { options[:as] => object }
         _render_partial_with_options options
       end
     end
