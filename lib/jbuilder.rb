@@ -244,11 +244,11 @@ class Jbuilder
       if _blank?(value)
         # json.comments { ... }
         # { "comments": ... }
-        _merge_block(key) { yield self }
+        _merge_block(key, &block)
       else
         # json.comments @post.comments { |comment| ... }
         # { "comments": [ { ... }, { ... } ] }
-        _scope { _array(value) { |element| yield element } }
+        _scope { _array(value, &block) }
       end
     elsif attributes.blank?
       if ::Jbuilder === value
