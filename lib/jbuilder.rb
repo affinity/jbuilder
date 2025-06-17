@@ -239,16 +239,16 @@ class Jbuilder
 
   alias_method :method_missing, :set!
 
-  def _set(key, value = BLANK, attributes = nil, &block)
-    result = if block
+  def _set(key, value = BLANK, attributes = nil)
+    result = if ::Kernel.block_given?
       if _blank?(value)
         # json.comments { ... }
         # { "comments": ... }
-        _merge_block(key){ yield self }
+        _merge_block(key) { yield self }
       else
         # json.comments @post.comments { |comment| ... }
         # { "comments": [ { ... }, { ... } ] }
-        _scope{ _array value, &block }
+        _scope { _array(value) { |element| yield element } }
       end
     elsif attributes.blank?
       if ::Jbuilder === value
@@ -264,11 +264,11 @@ class Jbuilder
     elsif _is_collection?(value)
       # json.comments @post.comments, :content, :created_at
       # { "comments": [ { "content": "hello", "created_at": "..." }, { "content": "world", "created_at": "..." } ] }
-      _scope{ _array value, attributes }
+      _scope { _array value, attributes }
     else
       # json.author @post.creator, :name, :email_address
       # { "author": { "name": "David", "email_address": "david@loudthinking.com" } }
-      _merge_block(key){ _extract value, attributes }
+      _merge_block(key) { _extract value, attributes }
     end
 
     _set_value key, result

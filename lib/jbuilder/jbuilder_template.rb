@@ -134,8 +134,10 @@ class JbuilderTemplate < Jbuilder
 
     if _partial_options?(options)
       _set_inline_partial name, object, options
+    elsif ::Kernel.block_given?
+      _set(name, object, args) { |x| yield x }
     else
-      ::Kernel.block_given? ? super : _set(name, object, args)
+      _set(name, object, args)
     end
   end
 
