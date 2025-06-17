@@ -241,14 +241,14 @@ class Jbuilder
 
   def _set(key, value = BLANK, attributes = nil, &block)
     result = if block
-      if !_blank?(value)
-        # json.comments @post.comments { |comment| ... }
-        # { "comments": [ { ... }, { ... } ] }
-        _scope{ _array value, &block }
-      else
+      if _blank?(value)
         # json.comments { ... }
         # { "comments": ... }
         _merge_block(key){ yield self }
+      else
+        # json.comments @post.comments { |comment| ... }
+        # { "comments": [ { ... }, { ... } ] }
+        _scope{ _array value, &block }
       end
     elsif attributes.blank?
       if ::Jbuilder === value
