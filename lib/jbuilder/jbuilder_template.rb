@@ -118,14 +118,16 @@ class JbuilderTemplate < Jbuilder
     @cached_root || super
   end
 
-  def array!(collection = EMPTY_ARRAY, *args, &block)
+  def array!(collection = EMPTY_ARRAY, *args)
     options = args.first
 
     if _partial_options?(options)
       options[:collection] = collection
       _render_partial_with_options options
+    elsif ::Kernel.block_given?
+      _array(collection, args) { |x| yield x }
     else
-      _array collection, args, &block
+      _array collection, args
     end
   end
 
