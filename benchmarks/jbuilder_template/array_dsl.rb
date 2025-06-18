@@ -7,14 +7,13 @@ require_relative '../../lib/jbuilder/jbuilder_template'
 
 Post = Struct.new(:id, :body)
 json = JbuilderTemplate.new nil
-posts = 3.times.map { Post.new(it, "Post ##{it}") }
 
 Benchmark.ips do |x|
-  x.report('before') do
-    json.array!(nil)
+  x.report('before') do |n|
+    n.times { json.array! }
   end
-  x.report('after') do
-    json.array!(nil)
+  x.report('after') do |n|
+    n.times { json.array! }
   end
 
   x.hold! 'temp_array_ips'
@@ -24,8 +23,8 @@ end
 json = JbuilderTemplate.new nil
 
 Benchmark.memory do |x|
-  x.report('before') { json.array! posts, :id, :body }
-  x.report('after') { json.array! posts, :id, :body }
+  x.report('before') { json.array! }
+  x.report('after') { json.array! }
 
   x.hold! 'temp_array_memory'
   x.compare!
