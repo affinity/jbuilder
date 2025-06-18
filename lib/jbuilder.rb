@@ -239,16 +239,16 @@ class Jbuilder
 
   alias_method :method_missing, :set!
 
-  def _set(key, value = BLANK, attributes = nil)
-    result = if ::Kernel.block_given?
+  def _set(key, value = BLANK, attributes = nil, &block)
+    result = if block
       if _blank?(value)
         # json.comments { ... }
         # { "comments": ... }
-        _merge_block(key) { yield self }
+        _merge_block key, &block
       else
         # json.comments @post.comments { |comment| ... }
         # { "comments": [ { ... }, { ... } ] }
-        _scope { _array(value) { |element| yield element } }
+        _scope { _array value, &block }
       end
     elsif attributes.blank?
       if ::Jbuilder === value
